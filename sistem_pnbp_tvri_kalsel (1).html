@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pencatatan Target PNBP - TVRI Kalimantan Selatan</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        tvri: {
+                            blue: '#003399',
+                            darkBlue: '#002266',
+                            lightBlue: '#1a52c8',
+                            gold: '#f3b200',
+                            goldHover: '#d99f00',
+                            accent: '#00a3e0'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-tvri-blue text-white shadow-lg sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- TVRI Branding -->
+                <div class="flex items-center space-x-4">
+                    <div class="bg-white p-2 rounded-xl shadow-md flex items-center justify-center">
+                        <span class="text-tvri-blue font-extrabold text-2xl tracking-wider px-1">TVRI</span>
+                        <span class="bg-tvri-gold text-xs font-bold text-slate-900 px-1.5 py-0.5 rounded ml-1">KALSEL</span>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg leading-tight sm:text-xl">SIM-PNBP TVRI KALSEL</h1>
+                        <p class="text-xs text-blue-200">Sistem Informasi Monitoring & Target Penerimaan Negara Bukan Pajak</p>
+                    </div>
+                </div>
+
+                <!-- Quick Action Header -->
+                <div class="flex items-center space-x-3">
+                    <button onclick="openModal()" class="bg-tvri-gold hover:bg-tvri-goldHover text-slate-900 font-semibold px-4 py-2.5 rounded-lg text-sm shadow-md transition duration-150 flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i>
+                        <span class="hidden md:inline">Tambah Transaksi</span>
+                    </button>
+                    <button onclick="exportCSV()" class="bg-blue-800 hover:bg-blue-700 text-white font-medium px-3.5 py-2.5 rounded-lg text-sm transition duration-150 flex items-center gap-2 border border-blue-600">
+                        <i class="fa-solid fa-file-excel text-green-400"></i>
+                        <span class="hidden md:inline">Ekspor Excel</span>
+                    </button>
+                    <button onclick="clearAllData()" class="bg-rose-700 hover:bg-rose-800 text-white font-medium px-3.5 py-2.5 rounded-lg text-sm transition duration-150 flex items-center gap-2 border border-rose-600" title="Kosongkan Semua Data Transaksi">
+                        <i class="fa-solid fa-trash-can text-rose-200"></i>
+                        <span class="hidden md:inline">Kosongkan Data</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs Bar -->
+    <div class="bg-white border-b border-slate-200 shadow-sm sticky top-20 z-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <nav class="flex space-x-8 overflow-x-auto custom-scrollbar" aria-label="Tabs">
+                <button onclick="switchTab('dashboard')" id="tab-btn-dashboard" class="border-b-2 border-tvri-blue text-tvri-blue font-semibold py-3 px-1 text-sm whitespace-nowrap flex items-center gap-2">
+                    <i class="fa-solid fa-chart-pie"></i> Ringkasan Dashboard
+                </button>
+                <button onclick="switchTab('tim')" id="tab-btn-tim" class="border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 font-medium py-3 px-1 text-sm whitespace-nowrap flex items-center gap-2">
+                    <i class="fa-solid fa-users"></i> Target Tim & Personel
+                </button>
+                <button onclick="switchTab('transaksi')" id="tab-btn-transaksi" class="border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 font-medium py-3 px-1 text-sm whitespace-nowrap flex items-center gap-2">
+                    <i class="fa-solid fa-receipt"></i> Data Transaksi Layanan
+                </button>
+                <button onclick="switchTab('layanan')" id="tab-btn-layanan" class="border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 font-medium py-3 px-1 text-sm whitespace-nowrap flex items-center gap-2">
+                    <i class="fa-solid fa-list-check"></i> Daftar Layanan PNBP
+                </button>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+        <!-- VIEW 1: DASHBOARD OVERVIEW -->
+        <div id="view-dashboard" class="space-y-8">
+            
+            <!-- Global Target Summary Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                
+                <!-- Card 1: Target Stasiun -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 hover:shadow-md transition">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Target Stasiun (TVRI Kalsel)</p>
+                            <h3 class="text-2xl font-black text-slate-800 mt-1" id="stat-target-stasiun">Rp 881.500.000</h3>
+                        </div>
+                        <div class="w-11 h-11 bg-blue-50 text-tvri-blue rounded-xl flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-bullseye"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-3 flex items-center gap-1">
+                        <i class="fa-solid fa-calendar-check text-blue-500"></i> Target DIPA PNBP Tahun Ini
+                    </p>
+                </div>
+
+                <!-- Card 2: Total Realisasi Stasiun -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 hover:shadow-md transition">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Realisasi Saat Ini</p>
+                            <h3 class="text-2xl font-black text-emerald-600 mt-1" id="stat-total-realisasi">Rp 0</h3>
+                        </div>
+                        <div class="w-11 h-11 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-wallet"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex items-center justify-between text-xs">
+                        <span class="text-slate-500">Capaian Stasiun:</span>
+                        <span class="font-bold text-emerald-600" id="stat-persen-stasiun">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-100 h-1.5 rounded-full mt-1.5 overflow-hidden">
+                        <div id="bar-persen-stasiun" class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Total Target Tim Personal -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 hover:shadow-md transition">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Akumulasi Tim (4 AE)</p>
+                            <h3 class="text-2xl font-black text-slate-800 mt-1" id="stat-target-tim">Rp 1.100.000.000</h3>
+                        </div>
+                        <div class="w-11 h-11 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-user-group"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-3 flex items-center gap-1">
+                        <i class="fa-solid fa-arrow-trend-up text-amber-500"></i> Alokasi target gabungan Marketing
+                    </p>
+                </div>
+
+                <!-- Card 4: Sisa Kekurangan Target Stasiun -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 hover:shadow-md transition">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Sisa Target Stasiun</p>
+                            <h3 class="text-2xl font-black text-rose-600 mt-1" id="stat-sisa-stasiun">Rp 881.500.000</h3>
+                        </div>
+                        <div class="w-11 h-11 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-chart-line-down"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-3 flex items-center gap-1">
+                        <i class="fa-solid fa-hourglass-half text-rose-500"></i> Nominal yang harus dikejar
+                    </p>
+                </div>
+
+            </div>
+
+            <!-- Visual Charts Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Chart 1: Realisasi Personal AE -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm lg:col-span-2">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                            <i class="fa-solid fa-chart-column text-tvri-blue"></i>
+                            Pencapaian Target per Personal Marketing (AE)
+                        </h3>
+                        <span class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md font-medium">Tahun 2026</span>
+                    </div>
+                    <div class="h-72 w-full">
+                        <canvas id="chartAEPerformance"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 2: Layanan Terlaris -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                            <i class="fa-solid fa-chart-pie text-tvri-gold"></i>
+                            Kategori Layanan
+                        </h3>
+                        <span class="text-xs text-slate-400">Top PNBP</span>
+                    </div>
+                    <div class="h-72 w-full flex items-center justify-center">
+                        <canvas id="chartServicesDistribution"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Table Preview -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+                    <div>
+                        <h3 class="font-bold text-slate-800">Transaksi PNBP Terakhir</h3>
+                        <p class="text-xs text-slate-500">5 Pemasukan PNBP yang baru saja dicatat</p>
+                    </div>
+                    <button onclick="switchTab('transaksi')" class="text-xs text-tvri-blue hover:underline font-semibold flex items-center gap-1">
+                        Lihat Semua Transaksi <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-slate-600">
+                        <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-100">
+                            <tr>
+                                <th class="px-5 py-3.5">Tanggal</th>
+                                <th class="px-5 py-3.5">Personel (AE)</th>
+                                <th class="px-5 py-3.5">Klien / Instansi</th>
+                                <th class="px-5 py-3.5">Jenis Layanan</th>
+                                <th class="px-5 py-3.5 text-right">Nilai Nominal</th>
+                                <th class="px-5 py-3.5 text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-recent-transactions">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- VIEW 2: TARGET TIM & PERSONEL -->
+        <div id="view-tim" class="hidden space-y-6">
+            <div class="bg-blue-900 text-white p-6 rounded-2xl shadow-md flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="space-y-1 text-center md:text-left">
+                    <h2 class="text-xl font-bold">Rincian Performa Marketing / Account Executive (AE)</h2>
+                    <p class="text-xs text-blue-200">Setiap personel bertanggung jawab terhadap target PNBP individu masing-masing.</p>
+                </div>
+                <div class="bg-blue-800/80 px-4 py-2.5 rounded-xl border border-blue-700 text-center">
+                    <span class="text-xs text-blue-200 block">Total Target 4 Personel</span>
+                    <span class="text-lg font-extrabold text-tvri-gold">Rp 1.100.000.000</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="ae-cards-container">
+                <!-- Cards created by Javascript -->
+            </div>
+        </div>
+
+        <!-- VIEW 3: DATA TRANSAKSI -->
+        <div id="view-transaksi" class="hidden space-y-6">
+            
+            <!-- Controls & Filters -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <h2 class="font-bold text-slate-800 text-lg">Daftar Transaksi PNBP TVRI Kalsel</h2>
+                    <button onclick="openModal()" class="bg-tvri-blue hover:bg-tvri-darkBlue text-white font-semibold px-4 py-2 rounded-xl text-sm transition shadow-sm flex items-center gap-2">
+                        <i class="fa-solid fa-circle-plus"></i> Input Transaksi Baru
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2 border-t border-slate-100">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Cari Klien / Keterangan</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
+                            <input type="text" id="filter-search" oninput="renderTransactionsTable()" placeholder="Cari..." class="w-full pl-8 pr-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-tvri-blue">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Filter Personel (AE)</label>
+                        <select id="filter-ae" onchange="renderTransactionsTable()" class="w-full py-2 px-3 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-tvri-blue">
+                            <option value="ALL">Semua Personel</option>
+                            <option value="WIRIANTO HADI SUCIPTO">Wirianto Hadi Sucipto</option>
+                            <option value="REFINA DARMAYANTI HUTAGALUNG">Refina Darmayanti Hutagalung</option>
+                            <option value="RAHMI APRILLIANI">Rahmi Aprilliani</option>
+                            <option value="DWIPA DANU WIJAYA">Dwipa Danu Wijaya</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Filter Jenis Layanan</label>
+                        <select id="filter-layanan" onchange="renderTransactionsTable()" class="w-full py-2 px-3 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-tvri-blue">
+                            <option value="ALL">Semua Jenis Layanan</option>
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Status Pembayaran</label>
+                        <select id="filter-status" onchange="renderTransactionsTable()" class="w-full py-2 px-3 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-tvri-blue">
+                            <option value="ALL">Semua Status</option>
+                            <option value="Lunas">Lunas</option>
+                            <option value="DP / Uang Muka">DP / Uang Muka</option>
+                            <option value="Pending">Pending / Proses SPK</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Full Transaction Table -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-slate-600">
+                        <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
+                            <tr>
+                                <th class="px-5 py-4">No. SPK / Tgl</th>
+                                <th class="px-5 py-4">Personel (AE)</th>
+                                <th class="px-5 py-4">Klien / Instansi</th>
+                                <th class="px-5 py-4">Layanan PNBP</th>
+                                <th class="px-5 py-4 text-right">Nilai Nominal</th>
+                                <th class="px-5 py-4 text-center">Status</th>
+                                <th class="px-5 py-4 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-all-transactions" class="divide-y divide-slate-100">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="empty-state" class="hidden p-10 text-center">
+                    <i class="fa-regular fa-folder-open text-4xl text-slate-300 mb-3"></i>
+                    <p class="text-slate-500 text-sm font-medium">Belum ada data transaksi yang sesuai filter.</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- VIEW 4: DAFTAR LAYANAN -->
+        <div id="view-layanan" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-800">Daftar Jenis Layanan PNBP TVRI Kalsel</h2>
+                    <p class="text-xs text-slate-500">Terdapat 26 jenis layanan PNBP penyiaran & sarana media TVRI Kalsel yang tersedia dalam sistem.</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pt-4" id="services-grid">
+                    <!-- Populated via Javascript -->
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-6 mt-12 text-xs border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 text-center space-y-2">
+            <p class="font-semibold text-slate-300">LPP TVRI Stasiun Kalimantan Selatan - Bidang Pengembangan Usaha (PNBP)</p>
+            <p>© 2026 TVRI Kalimantan Selatan. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- MODAL ADD / EDIT TRANSAKSI -->
+    <div id="modal-transaksi" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all">
+            <!-- Modal Header -->
+            <div class="bg-tvri-blue text-white px-6 py-4 flex justify-between items-center">
+                <h3 class="font-bold text-base flex items-center gap-2" id="modal-title">
+                    <i class="fa-solid fa-circle-plus text-tvri-gold"></i>
+                    Input Transaksi PNBP Baru
+                </h3>
+                <button onclick="closeModal()" class="text-white/80 hover:text-white text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Modal Form -->
+            <form id="form-transaksi" onsubmit="saveTransaction(event)" class="p-6 space-y-4">
+                <input type="hidden" id="form-id">
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Tanggal Transaksi *</label>
+                        <input type="date" id="form-tanggal" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-tvri-blue focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Nomor SPK / Kwitansi</label>
+                        <input type="text" id="form-spk" placeholder="Contoh: SPK/PNBP/01" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-tvri-blue focus:outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Personel Marketing (AE) *</label>
+                    <select id="form-ae" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-tvri-blue focus:outline-none">
+                        <option value="">-- Pilih Personel --</option>
+                        <option value="WIRIANTO HADI SUCIPTO">WIRIANTO HADI SUCIPTO (Target: Rp 300.000.000)</option>
+                        <option value="REFINA DARMAYANTI HUTAGALUNG">REFINA DARMAYANTI HUTAGALUNG (Target: Rp 150.000.000)</option>
+                        <option value="RAHMI APRILLIANI">RAHMI APRILLIANI (Target: Rp 200.000.000)</option>
+                        <option value="DWIPA DANU WIJAYA">DWIPA DANU WIJAYA (Target: Rp 450.000.000)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Klien / Nama Instansi *</label>
+                    <input type="text" id="form-klien" placeholder="Contoh: Dinas Kominfo Prov Kalsel / Bank Kalsel" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-tvri-blue focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Jenis Layanan PNBP *</label>
+                    <select id="form-layanan" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-tvri-blue focus:outline-none">
+                        <option value="">-- Pilih Jenis Layanan --</option>
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Nilai Nominal (Rp) *</label>
+                        <input type="number" id="form-nominal" min="1" placeholder="0" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-tvri-blue focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Status Pembayaran *</label>
+                        <select id="form-status" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-tvri-blue focus:outline-none">
+                            <option value="Lunas">Lunas</option>
+                            <option value="DP / Uang Muka">DP / Uang Muka</option>
+                            <option value="Pending">Pending / SPK</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Catatan Tambahan</label>
+                    <textarea id="form-catatan" rows="2" placeholder="Keterangan tayang, durasi, atau detail porsi pembayaran..." class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-tvri-blue focus:outline-none"></textarea>
+                </div>
+
+                <div class="pt-3 border-t border-slate-200 flex justify-end space-x-3">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-600 hover:bg-slate-100 text-sm font-medium">Batal</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-tvri-blue hover:bg-tvri-darkBlue text-white text-sm font-semibold shadow-md">Simpan Transaksi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Data Master AE & Target
+        const MASTER_AE = [
+            { name: 'WIRIANTO HADI SUCIPTO', target: 300000000, role: 'Account Executive' },
+            { name: 'REFINA DARMAYANTI HUTAGALUNG', target: 150000000, role: 'Account Executive' },
+            { name: 'RAHMI APRILLIANI', target: 200000000, role: 'Account Executive' },
+            { name: 'DWIPA DANU WIJAYA', target: 450000000, role: 'Account Executive' }
+        ];
+
+        // Target Stasiun Resmi
+        const TARGET_STASIUN = 881500000;
+
+        // Data Master 26 Layanan PNBP
+        const MASTER_LAYANAN = [
+            "Booking Airtime",
+            "Booking Tema",
+            "Booking Segmen",
+            "Spot Iklan TVC, ILM",
+            "OBB/CBB",
+            "Ad Lips",
+            "Time Signal Regular",
+            "Running Text",
+            "Telop",
+            "Template",
+            "BI & BO",
+            "Tag On Promo",
+            "Kuis",
+            "Build in Logo",
+            "Build in Product",
+            "Back Drop",
+            "Floor Drop",
+            "Wing Drop",
+            "Looping",
+            "Filler (0,1-1)",
+            "Advertorial (0,1-1)",
+            "Infotorial (0.1-1)",
+            "Super Impose (0,1-1)",
+            "Virtual Advertising",
+            "Squeeze Frame",
+            "Video Clip Music"
+        ];
+
+        // Data awal dikosongkan secara total
+        const SAMPLE_TRANSACTIONS = [];
+
+        // Global State
+        let transactions = [];
+        let chartAE = null;
+        let chartServices = null;
+
+        // On Page Load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadTransactions();
+            populateDropdowns();
+            renderAllViews();
+        });
+
+        // Load or Initialize LocalStorage
+        function loadTransactions() {
+            const saved = localStorage.getItem('tvri_kalsel_pnbp_trx');
+            if (saved) {
+                try {
+                    transactions = JSON.parse(saved);
+                } catch (e) {
+                    transactions = SAMPLE_TRANSACTIONS;
+                }
+            } else {
+                transactions = SAMPLE_TRANSACTIONS;
+                saveToLocalStorage();
+            }
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('tvri_kalsel_pnbp_trx', JSON.stringify(transactions));
+        }
+
+        // Populate Select Dropdowns
+        function populateDropdowns() {
+            const selectLayananModal = document.getElementById('form-layanan');
+            const selectLayananFilter = document.getElementById('filter-layanan');
+
+            selectLayananModal.innerHTML = '<option value="">-- Pilih Jenis Layanan --</option>';
+            selectLayananFilter.innerHTML = '<option value="ALL">Semua Jenis Layanan</option>';
+
+            MASTER_LAYANAN.forEach(item => {
+                selectLayananModal.innerHTML += `<option value="${item}">${item}</option>`;
+                selectLayananFilter.innerHTML += `<option value="${item}">${item}</option>`;
+            });
+        }
+
+        // Format Currency IDR
+        function formatIDR(amount) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+
+        // Render All Dashboard Components
+        function renderAllViews() {
+            renderDashboardStats();
+            renderAECards();
+            renderTransactionsTable();
+            renderServicesGrid();
+            renderCharts();
+        }
+
+        // Calculate Realization per AE
+        function getAERealization(aeName) {
+            return transactions
+                .filter(t => t.ae === aeName)
+                .reduce((sum, t) => sum + Number(t.nominal), 0);
+        }
+
+        // Calculate Total Stasiun Realization
+        function getTotalRealization() {
+            return transactions.reduce((sum, t) => sum + Number(t.nominal), 0);
+        }
+
+        // Render Dashboard Stats
+        function renderDashboardStats() {
+            const totalRealization = getTotalRealization();
+            const totalTargetTim = MASTER_AE.reduce((s, a) => s + a.target, 0);
+            const persenStasiun = ((totalRealization / TARGET_STASIUN) * 100).toFixed(1);
+            const sisaTargetStasiun = Math.max(0, TARGET_STASIUN - totalRealization);
+
+            document.getElementById('stat-target-stasiun').innerText = formatIDR(TARGET_STASIUN);
+            document.getElementById('stat-total-realisasi').innerText = formatIDR(totalRealization);
+            document.getElementById('stat-persen-stasiun').innerText = `${persenStasiun}%`;
+            document.getElementById('bar-persen-stasiun').style.width = `${Math.min(100, persenStasiun)}%`;
+            document.getElementById('stat-target-tim').innerText = formatIDR(totalTargetTim);
+            document.getElementById('stat-sisa-stasiun').innerText = formatIDR(sisaTargetStasiun);
+
+            // Recent 5 transactions table preview
+            const recentBody = document.getElementById('table-recent-transactions');
+            recentBody.innerHTML = '';
+            const sorted = [...transactions].sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal)).slice(0, 5);
+
+            if (sorted.length === 0) {
+                recentBody.innerHTML = `<tr><td colspan="6" class="px-5 py-6 text-center text-slate-400">Belum ada transaksi.</td></tr>`;
+            } else {
+                sorted.forEach(t => {
+                    recentBody.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                            <td class="px-5 py-3 font-medium text-slate-700">${t.tanggal}</td>
+                            <td class="px-5 py-3 text-xs font-semibold text-tvri-blue">${t.ae}</td>
+                            <td class="px-5 py-3 font-medium">${t.klien}</td>
+                            <td class="px-5 py-3"><span class="bg-slate-100 text-slate-700 text-xs px-2 py-1 rounded">${t.layanan}</span></td>
+                            <td class="px-5 py-3 text-right font-bold text-slate-800">${formatIDR(t.nominal)}</td>
+                            <td class="px-5 py-3 text-center">${getStatusBadge(t.status)}</td>
+                        </tr>
+                    `;
+                });
+            }
+        }
+
+        // Status Badge Helper
+        function getStatusBadge(status) {
+            if (status === 'Lunas') {
+                return `<span class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-1 rounded-full"><i class="fa-solid fa-check text-[10px] mr-1"></i>Lunas</span>`;
+            } else if (status === 'DP / Uang Muka') {
+                return `<span class="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-1 rounded-full"><i class="fa-solid fa-clock text-[10px] mr-1"></i>DP</span>`;
+            } else {
+                return `<span class="bg-slate-200 text-slate-700 text-xs font-semibold px-2.5 py-1 rounded-full"><i class="fa-solid fa-hourglass text-[10px] mr-1"></i>Pending</span>`;
+            }
+        }
+
+        // Render AE Target Cards
+        function renderAECards() {
+            const container = document.getElementById('ae-cards-container');
+            container.innerHTML = '';
+
+            MASTER_AE.forEach(ae => {
+                const realisasi = getAERealization(ae.name);
+                const sisa = Math.max(0, ae.target - realisasi);
+                const persen = ((realisasi / ae.target) * 100).toFixed(1);
+                
+                // Color badge based on performance
+                let badgeClass = "bg-amber-100 text-amber-800";
+                if (persen >= 100) badgeClass = "bg-emerald-100 text-emerald-800";
+                else if (persen < 40) badgeClass = "bg-rose-100 text-rose-800";
+
+                container.innerHTML += `
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="font-bold text-slate-900 text-base">${ae.name}</h3>
+                                <p class="text-xs text-slate-400 font-medium">${ae.role} TVRI Kalsel</p>
+                            </div>
+                            <span class="text-xs px-2.5 py-1 rounded-full font-bold ${badgeClass}">
+                                ${persen}% Target
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-2 bg-slate-50 p-3.5 rounded-xl border border-slate-100 mb-4 text-center">
+                            <div>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Target Personal</span>
+                                <span class="text-xs font-extrabold text-slate-800">${formatIDR(ae.target)}</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Realisasi</span>
+                                <span class="text-xs font-extrabold text-emerald-600">${formatIDR(realisasi)}</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Sisa Target</span>
+                                <span class="text-xs font-extrabold text-rose-600">${formatIDR(sisa)}</span>
+                            </div>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="space-y-1.5">
+                            <div class="flex justify-between text-xs text-slate-500">
+                                <span>Progress Capaian</span>
+                                <span class="font-semibold text-slate-700">${formatIDR(realisasi)} / ${formatIDR(ae.target)}</span>
+                            </div>
+                            <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                                <div class="bg-tvri-blue h-full rounded-full transition-all duration-500" style="width: ${Math.min(100, persen)}%"></div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center text-xs">
+                            <span class="text-slate-400"><i class="fa-solid fa-list-check mr-1"></i> Transaksi: ${transactions.filter(t => t.ae === ae.name).length} Trx</span>
+                            <button onclick="filterByAE('${ae.name}')" class="text-tvri-blue hover:underline font-semibold">
+                                Lihat Transaksi <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Render Main Transactions Table
+        function renderTransactionsTable() {
+            const tableBody = document.getElementById('table-all-transactions');
+            const emptyState = document.getElementById('empty-state');
+
+            const filterSearch = document.getElementById('filter-search').value.toLowerCase();
+            const filterAE = document.getElementById('filter-ae').value;
+            const filterLayanan = document.getElementById('filter-layanan').value;
+            const filterStatus = document.getElementById('filter-status').value;
+
+            const filtered = transactions.filter(t => {
+                const matchSearch = t.klien.toLowerCase().includes(filterSearch) || 
+                                    (t.spk && t.spk.toLowerCase().includes(filterSearch)) ||
+                                    (t.catatan && t.catatan.toLowerCase().includes(filterSearch));
+                const matchAE = filterAE === 'ALL' || t.ae === filterAE;
+                const matchLayanan = filterLayanan === 'ALL' || t.layanan === filterLayanan;
+                const matchStatus = filterStatus === 'ALL' || t.status === filterStatus;
+
+                return matchSearch && matchAE && matchLayanan && matchStatus;
+            });
+
+            tableBody.innerHTML = '';
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                filtered.forEach(t => {
+                    tableBody.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition">
+                            <td class="px-5 py-4">
+                                <div class="font-bold text-slate-800 text-xs">${t.spk || 'Tanpa SPK'}</div>
+                                <div class="text-[11px] text-slate-400">${t.tanggal}</div>
+                            </td>
+                            <td class="px-5 py-4 font-semibold text-xs text-tvri-blue max-w-[150px] truncate" title="${t.ae}">
+                                ${t.ae}
+                            </td>
+                            <td class="px-5 py-4 font-medium text-slate-800">
+                                ${t.klien}
+                                ${t.catatan ? `<div class="text-[11px] text-slate-400 truncate max-w-xs">${t.catatan}</div>` : ''}
+                            </td>
+                            <td class="px-5 py-4">
+                                <span class="bg-blue-50 text-blue-700 text-xs font-medium px-2.5 py-1 rounded-lg border border-blue-100">
+                                    ${t.layanan}
+                                </span>
+                            </td>
+                            <td class="px-5 py-4 text-right font-bold text-slate-800">
+                                ${formatIDR(t.nominal)}
+                            </td>
+                            <td class="px-5 py-4 text-center">
+                                ${getStatusBadge(t.status)}
+                            </td>
+                            <td class="px-5 py-4 text-center space-x-2">
+                                <button onclick="editTransaction('${t.id}')" class="text-slate-400 hover:text-tvri-blue p-1.5 transition" title="Edit">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button onclick="deleteTransaction('${t.id}')" class="text-slate-400 hover:text-rose-600 p-1.5 transition" title="Hapus">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+        }
+
+        // Render Services Master Cards
+        function renderServicesGrid() {
+            const grid = document.getElementById('services-grid');
+            grid.innerHTML = '';
+
+            MASTER_LAYANAN.forEach((layanan, index) => {
+                const count = transactions.filter(t => t.layanan === layanan).length;
+                const totalIncome = transactions.filter(t => t.layanan === layanan).reduce((s, t) => s + Number(t.nominal), 0);
+
+                grid.innerHTML += `
+                    <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-tvri-blue hover:shadow-md transition">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-[10px] font-bold bg-tvri-blue text-white px-2 py-0.5 rounded">
+                                #${index + 1}
+                            </span>
+                            <span class="text-xs text-slate-400 font-medium">${count} Transaksi</span>
+                        </div>
+                        <h4 class="font-bold text-sm text-slate-800 mb-1">${layanan}</h4>
+                        <p class="text-xs text-emerald-600 font-semibold">${formatIDR(totalIncome)}</p>
+                    </div>
+                `;
+            });
+        }
+
+        // Render Charts using Chart.js
+        function renderCharts() {
+            // Chart 1: AE Target vs Realisasi
+            const ctxAE = document.getElementById('chartAEPerformance').getContext('2d');
+            
+            const labels = MASTER_AE.map(a => a.name.split(' ')[0] + ' ' + (a.name.split(' ')[1] || ''));
+            const dataTarget = MASTER_AE.map(a => a.target);
+            const dataRealisasi = MASTER_AE.map(a => getAERealization(a.name));
+
+            if (chartAE) chartAE.destroy();
+
+            chartAE = new Chart(ctxAE, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Target Personal (Rp)',
+                            data: dataTarget,
+                            backgroundColor: 'rgba(203, 213, 225, 0.7)',
+                            borderColor: '#94a3b8',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Realisasi PNBP (Rp)',
+                            data: dataRealisasi,
+                            backgroundColor: '#003399',
+                            borderColor: '#002266',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + formatIDR(context.raw);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: function(value) {
+                                    return 'Rp ' + (value / 1000000) + ' Jt';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Chart 2: Services Distribution
+            const ctxServices = document.getElementById('chartServicesDistribution').getContext('2d');
+            
+            // Group income by service
+            const serviceIncome = {};
+            transactions.forEach(t => {
+                serviceIncome[t.layanan] = (serviceIncome[t.layanan] || 0) + Number(t.nominal);
+            });
+
+            const serviceLabels = Object.keys(serviceIncome);
+            const serviceData = Object.values(serviceIncome);
+
+            if (chartServices) chartServices.destroy();
+
+            chartServices = new Chart(ctxServices, {
+                type: 'doughnut',
+                data: {
+                    labels: serviceLabels.length > 0 ? serviceLabels : ['Belum ada data'],
+                    datasets: [{
+                        data: serviceData.length > 0 ? serviceData : [1],
+                        backgroundColor: [
+                            '#003399', '#f3b200', '#10b981', '#f43f5e', '#8b5cf6',
+                            '#06b6d4', '#f97316', '#64748b', '#ec4899', '#14b8a6'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { boxWidth: 12, font: { size: 10 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + formatIDR(context.raw);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Modal Form Actions
+        function openModal(editId = null) {
+            const modal = document.getElementById('modal-transaksi');
+            const form = document.getElementById('form-transaksi');
+            
+            form.reset();
+            document.getElementById('form-id').value = '';
+            
+            if (editId) {
+                const trx = transactions.find(t => t.id === editId);
+                if (trx) {
+                    document.getElementById('modal-title').innerText = 'Edit Transaksi PNBP';
+                    document.getElementById('form-id').value = trx.id;
+                    document.getElementById('form-tanggal').value = trx.tanggal;
+                    document.getElementById('form-spk').value = trx.spk || '';
+                    document.getElementById('form-ae').value = trx.ae;
+                    document.getElementById('form-klien').value = trx.klien;
+                    document.getElementById('form-layanan').value = trx.layanan;
+                    document.getElementById('form-nominal').value = trx.nominal;
+                    document.getElementById('form-status').value = trx.status;
+                    document.getElementById('form-catatan').value = trx.catatan || '';
+                }
+            } else {
+                document.getElementById('modal-title').innerText = 'Input Transaksi PNBP Baru';
+                document.getElementById('form-tanggal').valueAsDate = new Date();
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('modal-transaksi').classList.add('hidden');
+        }
+
+        function saveTransaction(e) {
+            e.preventDefault();
+
+            const id = document.getElementById('form-id').value;
+            const tanggal = document.getElementById('form-tanggal').value;
+            const spk = document.getElementById('form-spk').value;
+            const ae = document.getElementById('form-ae').value;
+            const klien = document.getElementById('form-klien').value;
+            const layanan = document.getElementById('form-layanan').value;
+            const nominal = Number(document.getElementById('form-nominal').value);
+            const status = document.getElementById('form-status').value;
+            const catatan = document.getElementById('form-catatan').value;
+
+            if (id) {
+                // Edit existing
+                const index = transactions.findIndex(t => t.id === id);
+                if (index !== -1) {
+                    transactions[index] = { id, tanggal, spk, ae, klien, layanan, nominal, status, catatan };
+                }
+            } else {
+                // New transaction
+                const newTrx = {
+                    id: 'trx-' + Date.now(),
+                    tanggal,
+                    spk: spk || `SPK/PNBP/${new Date().getFullYear()}/${transactions.length + 1}`,
+                    ae,
+                    klien,
+                    layanan,
+                    nominal,
+                    status,
+                    catatan
+                };
+                transactions.unshift(newTrx);
+            }
+
+            saveToLocalStorage();
+            renderAllViews();
+            closeModal();
+        }
+
+        function editTransaction(id) {
+            openModal(id);
+        }
+
+        function deleteTransaction(id) {
+            if (confirm('Apakah Anda yakin ingin menghapus data transaksi ini?')) {
+                transactions = transactions.filter(t => t.id !== id);
+                saveToLocalStorage();
+                renderAllViews();
+            }
+        }
+
+        // Filter Jump Helper from AE Card
+        function filterByAE(aeName) {
+            switchTab('transaksi');
+            document.getElementById('filter-ae').value = aeName;
+            renderTransactionsTable();
+        }
+
+        // Tab Navigation Switcher
+        function switchTab(tabName) {
+            const tabs = ['dashboard', 'tim', 'transaksi', 'layanan'];
+            tabs.forEach(t => {
+                document.getElementById(`view-${t}`).classList.add('hidden');
+                const btn = document.getElementById(`tab-btn-${t}`);
+                btn.classList.remove('border-tvri-blue', 'text-tvri-blue');
+                btn.classList.add('border-transparent', 'text-slate-500');
+            });
+
+            document.getElementById(`view-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-btn-${tabName}`);
+            activeBtn.classList.add('border-tvri-blue', 'text-tvri-blue');
+            activeBtn.classList.remove('border-transparent', 'text-slate-500');
+
+            if (tabName === 'dashboard') {
+                renderCharts();
+            }
+        }
+
+        // Export CSV Function
+        function exportCSV() {
+            if (transactions.length === 0) {
+                alert('Tidak ada data transaksi untuk diekspor.');
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "ID,Tanggal,No SPK,Personel AE,Klien/Instansi,Jenis Layanan,Nominal (Rp),Status,Catatan\n";
+
+            transactions.forEach(t => {
+                const row = [
+                    t.id,
+                    t.tanggal,
+                    `"${t.spk || ''}"`,
+                    `"${t.ae}"`,
+                    `"${t.klien}"`,
+                    `"${t.layanan}"`,
+                    t.nominal,
+                    `"${t.status}"`,
+                    `"${t.catatan || ''}"`
+                ].join(",");
+                csvContent += row + "\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Laporan_PNBP_TVRI_Kalsel_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Kosongkan Seluruh Data Transaksi
+        function clearAllData() {
+            if (confirm('Apakah Anda yakin ingin mengosongkan SELURUH data transaksi PNBP? Data yang tersimpan di browser akan dihapus secara permanen.')) {
+                transactions = [];
+                localStorage.removeItem('tvri_kalsel_pnbp_trx');
+                renderAllViews();
+            }
+        }
+    </script>
+</body>
+</html>
